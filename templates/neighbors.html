@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% from "_field.html" import avatar %}
+{% block title %}{{ _('أهل الحي||page') }}{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <p class="eyebrow">{{ _('أهل الحي||page') }}</p>
+    <h1>{{ _('أعضاء حي {hood}', hood=_(g.user['neighborhood_name'])) }}</h1>
+    <p class="muted">{{ _('{count} عضو · {active} نشط الآن', count=members|length, active=active_count) }}</p>
+  </div>
+</div>
+
+<div class="members">
+{% for m in members %}
+  <article class="member {{ 'member-omda' if m.role == 'admin' }}">
+    <div class="member-head">
+      {{ avatar(m.name) }}
+      <div class="member-id">
+        <h3>{{ m.name }}{% if m.id == g.user['id'] %} <small class="you">({{ _('أنت') }})</small>{% endif %}</h3>
+        {% if m.role == 'admin' %}<span class="role-badge role-admin">{{ _('العمدة · مشرف الحي') }}</span>{% else %}<span class="role-badge role-resident-light">{{ _('ساكن') }}</span>{% endif %}
+      </div>
+      <span class="presence {{ 'on' if m.active else 'off' }}"><span class="presence-dot"></span>{{ _('نشط الآن') if m.active else _('غير نشط') }}</span>
+    </div>
+    <div class="member-req">
+      <span class="member-req-label">{{ _('طلبه الحالي') }}</span>
+      {% if m.requests %}
+        {% for r in m.requests %}
+          <a href="{{ url_for('help.detail', request_id=r.id) }}"><span class="cat">{{ _(r.category) }}</span> {{ r.title }}</a>
+        {% endfor %}
+      {% else %}
+        <span class="muted">{{ _('لا يوجد طلب مفتوح') }}</span>
+      {% endif %}
+    </div>
+  </article>
+{% endfor %}
+</div>
+<p class="hint center">{{ _('لا يظهر رقم الجوال والعنوان لحماية خصوصية السكان.') }}</p>
+{% endblock %}

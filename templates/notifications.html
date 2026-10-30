@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ _('التنبيهات') }}{% endblock %}
+{% block content %}
+<div class="page-title"><div><h1>{{ _('التنبيهات') }}</h1></div></div>
+{% if rows %}
+<div class="card notif-list">
+  {% for n in rows %}
+    <a class="notif-row {{ 'unread' if not n['read_at'] }}" href="{{ n['link'] or '#' }}">
+      <span>{% if not n['read_at'] %}<span class="new-tag">{{ _('جديد') }}</span> {% endif %}{{ notification_text(n) }}</span>
+      <span class="notif-time" dir="ltr">{{ n['created_at'][:16] }}</span>
+    </a>
+  {% endfor %}
+</div>
+{% else %}
+  <div class="empty"><p>{{ _('لا توجد تنبيهات.') }}</p></div>
+{% endif %}
+{% endblock %}

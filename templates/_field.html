@@ -1,0 +1,26 @@
+{% macro error(errors, name) %}{% if errors.get(name) %}<p class="field-error">{{ errors[name] }}</p>{% endif %}{% endmacro %}
+{% macro csrf() %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endmacro %}
+{% macro avatar(name, size='') %}<span class="avatar avatar-{{ (name|length) % 5 }} {{ size }}" aria-hidden="true">{{ name[:1] }}</span>{% endmacro %}
+{% macro request_card(r) %}
+<a class="request-item" href="{{ url_for('help.detail', request_id=r.id) }}">
+  <div class="item-body">
+    <span class="cat">{{ _(r.category) }}</span>
+    <h3>{{ r.title }}</h3>
+    <p class="item-meta">{{ avatar(r.author_name, 'avatar-sm') }} {{ r.author_name }} · <span dir="ltr">{{ r.created_at[:16] }}</span></p>
+  </div>
+  <span class="reply-count">{{ _('{count} رد', count=r.reply_count) }}</span>
+</a>
+{% endmacro %}
+{% macro greeting(user, subtitle) %}
+<section class="greeting">
+  {{ avatar(user['name'], 'avatar-lg') }}
+  <div>
+    <p class="greet-small">{{ _('مرحباً،') }}</p>
+    <h1>{{ user['name'] }}</h1>
+    <p class="greet-sub">
+      {% if user['role'] == 'admin' %}<span class="role-badge role-admin">{{ _('العمدة · مشرف الحي') }}</span>{% else %}<span class="role-badge role-resident">{{ _('ساكن') }}</span>{% endif %}
+      {{ _('حي {hood}', hood=_(user['neighborhood_name'])) }} · {{ subtitle }}
+    </p>
+  </div>
+</section>
+{% endmacro %}

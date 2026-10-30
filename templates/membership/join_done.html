@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ _('تم إرسال طلبك') }}{% endblock %}
+{% block content %}
+<div class="card narrow center">
+  <p class="eyebrow">{{ _('تم إرسال طلبك') }}</p>
+  <h1>{{ _('رقم طلبك') }}</h1>
+  <p class="big-number" dir="ltr">#{{ request_number }}</p>
+  <p class="muted">{{ _('احتفظ برقم الطلب. ستحتاجه مع رقم جوالك لمتابعة حالة الطلب.') }}</p>
+  <a class="btn" href="{{ url_for('membership.status') }}">{{ _('متابعة الطلب') }}</a>
+</div>
+{% endblock %}

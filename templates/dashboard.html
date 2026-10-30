@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% from "_field.html" import greeting, request_card %}
+{% block title %}{{ _('الرئيسية') }}{% endblock %}
+{% block content %}
+{{ greeting(g.user, _('هذا ما يحدث في حيّك اليوم')) }}
+
+<section class="stats">
+  <div class="stat"><span class="stat-num">{{ stats.open }}</span><span class="stat-label">{{ _('طلب مفتوح في الحي') }}</span></div>
+  <div class="stat"><span class="stat-num">{{ stats.mine }}</span><span class="stat-label">{{ _('طلباتي المفتوحة') }}</span></div>
+  <div class="stat"><span class="stat-num">{{ stats.replies }}</span><span class="stat-label">{{ _('ردودي على الجيران') }}</span></div>
+  <a class="stat stat-link" href="{{ url_for('community.neighbors') }}"><span class="stat-num">{{ stats.neighbors }}</span><span class="stat-label">{{ _('عضو في الحي') }}</span></a>
+</section>
+
+<div class="quick-actions">
+  <a class="action-card" href="{{ url_for('help.new_request') }}"><div><strong>{{ _('اطلب مساعدة') }}</strong><small>{{ _('استعارة غرض، سؤال، توصية…') }}</small></div></a>
+  <a class="action-card" href="{{ url_for('help.list_requests') }}"><div><strong>{{ _('ساعد جارك') }}</strong><small>{{ _('تصفح كل الطلبات المفتوحة') }}</small></div></a>
+</div>
+
+<div class="two-col">
+  <section>
+    <div class="section-head"><h2>{{ _('جيرانك يحتاجون') }}</h2><a href="{{ url_for('help.list_requests') }}">{{ _('عرض الكل') }}</a></div>
+    {% if latest %}
+      <div class="request-list">{% for r in latest %}{{ request_card(r) }}{% endfor %}</div>
+    {% else %}
+      <div class="empty small-empty"><p>{{ _('لا توجد طلبات من جيرانك حالياً.') }}</p></div>
+    {% endif %}
+  </section>
+  <section>
+    <div class="section-head"><h2>{{ _('طلباتي') }}</h2></div>
+    {% if mine %}
+      <div class="request-list">{% for r in mine %}{{ request_card(r) }}{% endfor %}</div>
+    {% else %}
+      <div class="empty small-empty"><p>{{ _('ليس لديك طلبات مفتوحة.') }}</p><a href="{{ url_for('help.new_request') }}">{{ _('انشر طلبك الأول') }}</a></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

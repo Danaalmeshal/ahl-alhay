@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_field.html" import csrf, avatar %}
+{% block title %}{{ req.title }}{% endblock %}
+{% block content %}
+<a class="back" href="{{ url_for('help.list_requests') }}">{{ _('كل الطلبات') }}</a>
+<article class="card request-detail">
+  <div class="request-head">
+    <span class="cat">{{ _(req.category) }}</span>
+    {% if req.status == 'resolved' %}<span class="badge badge-approved">{{ _('تم الحل') }}</span>{% else %}<span class="badge badge-open">{{ _('مفتوح') }}</span>{% endif %}
+  </div>
+  <h1>{{ req.title }}</h1>
+  <p class="item-meta">{{ avatar(req.author_name) }} <strong>{{ req.author_name }}</strong> · <span dir="ltr">{{ req.created_at[:16] }}</span></p>
+  <p class="body-text">{{ req.description }}</p>
+  {% if req.author_id == g.user['id'] and req.status == 'open' %}
+    <form method="post" action="{{ url_for('help.resolve', request_id=req.id) }}">
+      {{ csrf() }}
+      <button class="btn btn-approve" type="submit">{{ _('تم الحل · إغلاق الطلب') }}</button>
+    </form>
+  {% endif %}
+</article>
+
+<h2 class="section-title" id="replies">{{ _('ردود الجيران ({count})', count=replies|length) }}</h2>
+<div class="thread">
+{% for rep in replies %}
+  <div class="reply {% if rep.author_id == req.author_id %}reply-owner{% endif %}">
+    {{ avatar(rep.author_name) }}
+    <div class="bubble">
+      <p class="reply-meta"><strong>{{ rep.author_name }}</strong>{% if rep.author_id == req.author_id %} <span class="owner-tag">{{ _('صاحب الطلب') }}</span>{% endif %} · <span dir="ltr">{{ rep.created_at[:16] }}</span></p>
+      <p>{{ rep.body }}</p>
+    </div>
+  </div>
+{% else %}
+  <p class="muted">{{ _('لا توجد ردود بعد. كن أول جار يرد.') }}</p>
+{% endfor %}
+</div>
+
+{% if req.status == 'open' %}
+<form method="post" class="card reply-form">
+  {{ csrf() }}
+  <label for="body">{{ _('ردك') }}</label>
+  <textarea id="body" name="body" rows="3" placeholder="{{ _('اعرض مساعدتك أو اسأل عن التفاصيل') }}"></textarea>
+  {% if error %}<p class="field-error">{{ error }}</p>{% endif %}
+  <button class="btn" type="submit">{{ _('إرسال الرد') }}</button>
+</form>
+{% endif %}
+{% endblock %}

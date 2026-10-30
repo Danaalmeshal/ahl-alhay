@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_field.html" import request_card %}
+{% block title %}{{ _('طلبات المساعدة') }}{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <p class="eyebrow">{{ _('حي {hood}', hood=_(g.user['neighborhood_name'])) }}</p>
+    <h1>{{ _('وش يحتاج جيرانك اليوم؟') }}</h1>
+    <p class="muted">{{ _('{count} طلب مفتوح · الأحدث أولاً', count=requests|length) }}</p>
+  </div>
+  <a class="btn" href="{{ url_for('help.new_request') }}">{{ _('اطلب مساعدة') }}</a>
+</div>
+
+{% if not requests %}
+  <div class="empty">
+    <p>{{ _('الحي هادئ اليوم، لا توجد طلبات مساعدة حالياً.') }}</p>
+    <a class="btn" href="{{ url_for('help.new_request') }}">{{ _('كن أول من ينشر طلباً') }}</a>
+  </div>
+{% else %}
+  <div class="request-list">{% for r in requests %}{{ request_card(r) }}{% endfor %}</div>
+{% endif %}
+{% endblock %}

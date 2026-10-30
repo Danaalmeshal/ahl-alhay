@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% from "_field.html" import csrf, avatar, greeting %}
+{% block title %}{{ _('طلبات الانضمام') }}{% endblock %}
+{% block content %}
+{{ greeting(g.user, _('مجلس العمدة')) }}
+
+<section class="stats stats-3">
+  <div class="stat stat-hot"><span class="stat-num">{{ stats.pending }}</span><span class="stat-label">{{ _('طلب انضمام ينتظر قرارك') }}</span></div>
+  <a class="stat stat-link" href="{{ url_for('community.neighbors') }}"><span class="stat-num">{{ stats.residents }}</span><span class="stat-label">{{ _('ساكن مسجّل في الحي') }}</span></a>
+  <a class="stat stat-link" href="{{ url_for('help.list_requests') }}"><span class="stat-num">{{ stats.open_help }}</span><span class="stat-label">{{ _('طلب مساعدة مفتوح') }}</span></a>
+</section>
+
+<div class="section-head"><h2>{{ _('طلبات الانضمام الجديدة') }}</h2></div>
+
+{% if not pending %}
+  <div class="empty"><p>{{ _('لا أحد يطرق الباب الآن. لا توجد طلبات انضمام جديدة.') }}</p></div>
+{% endif %}
+
+{% for r in pending %}
+<article class="card request-card">
+  <div class="request-head">
+    <h2 class="with-avatar">{{ avatar(r.name) }} {{ r.name }}</h2>
+    <span class="muted" dir="ltr">#{{ r.id }}</span>
+  </div>
+  <dl class="meta">
+    <div><dt>{{ _('الجوال') }}</dt><dd dir="ltr">{{ r.phone }}</dd></div>
+    <div><dt>{{ _('العنوان') }}</dt><dd>{{ r.address }}</dd></div>
+    <div><dt>{{ _('تاريخ الطلب') }}</dt><dd dir="ltr">{{ r.created_at[:16] }}</dd></div>
+  </dl>
+  <div class="decision">
+    <form method="post" action="{{ url_for('membership.approve', request_id=r.id) }}" class="decision-form">
+      {{ csrf() }}
+      <label for="welcome-{{ r.id }}">{{ _('رسالة ترحيب (اختياري)') }}</label>
+      <textarea id="welcome-{{ r.id }}" name="welcome_message" rows="2" placeholder="{{ _('مثال: أهلاً بك جاراً عزيزاً في حينا') }}"></textarea>
+      <button class="btn btn-approve" type="submit">{{ _('قبول وإنشاء كود') }}</button>
+    </form>
+    <form method="post" action="{{ url_for('membership.reject', request_id=r.id) }}" class="decision-form">
+      {{ csrf() }}
+      <label for="reason-{{ r.id }}">{{ _('سبب الرفض (مطلوب عند الرفض)') }}</label>
+      <textarea id="reason-{{ r.id }}" name="rejection_reason" rows="2" required></textarea>
+      <button class="btn btn-reject" type="submit">{{ _('رفض') }}</button>
+    </form>
+  </div>
+</article>
+{% endfor %}
+
+{% if decided %}
+<div class="section-head"><h2>{{ _('آخر القرارات') }}</h2></div>
+<div class="card table-card">
+  <table>
+    <thead><tr><th>{{ _('الطلب') }}</th><th>{{ _('الاسم') }}</th><th>{{ _('القرار') }}</th><th>{{ _('الكود') }}</th></tr></thead>
+    <tbody>
+    {% for r in decided %}
+      <tr>
+        <td dir="ltr">#{{ r.id }}</td>
+        <td>{{ r.name }}</td>
+        <td>{% if r.status == 'approved' %}<span class="badge badge-approved">{{ _('مقبول') }}</span>{% else %}<span class="badge badge-rejected">{{ _('مرفوض') }}</span>{% endif %}</td>
+        <td dir="ltr">{% if r.code %}{{ r.code }}{% if r.used_at %} <small class="muted">({{ _('مُستخدم') }})</small>{% endif %}{% else %}—{% endif %}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

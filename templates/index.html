@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}{{ _('الرئيسية') }}{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-text">
+    <p class="eyebrow light">{{ _('مجتمع حيّك في مكان واحد') }}</p>
+    <h1>{{ _('جيرانك أقرب<br>مما تتوقع')|safe }}</h1>
+    <p class="lead">{{ _('اطلب سلّم، اسأل عن سبّاك، أو مدّ يد العون لجارك. كل شيء داخل حيّك فقط، وبعضوية يوافق عليها عمدة الحي.') }}</p>
+    <div class="hero-actions">
+      <a class="btn btn-warm" href="{{ url_for('membership.join') }}">{{ _('اطلب الانضمام لحيّك') }}</a>
+      <a class="btn btn-glass" href="{{ url_for('auth.login') }}">{{ _('لدي حساب') }}</a>
+    </div>
+  </div>
+  <div class="hero-street" aria-hidden="true"></div>
+</section>
+
+<h2 class="section-title center-title">{{ _('كيف تنضم؟') }}</h2>
+<section class="steps">
+  <div class="step"><span class="step-num">1</span><h3>{{ _('اطرق الباب') }}</h3><p>{{ _('أرسل طلب انضمام باسمك وجوالك وحيّك وعنوانك، وتحصل على رقم طلب.') }}</p></div>
+  <div class="step"><span class="step-num">2</span><h3>{{ _('العمدة يفتح لك') }}</h3><p>{{ _('بعد موافقة عمدة الحي يظهر لك كود الدعوة في صفحة متابعة الطلب.') }}</p></div>
+  <div class="step"><span class="step-num">3</span><h3>{{ _('أهلاً بك يا جار') }}</h3><p>{{ _('سجّل حسابك بالكود، وابدأ تساعد جيرانك ويساعدونك.') }}</p></div>
+</section>
+{% endblock %}

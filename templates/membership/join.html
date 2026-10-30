@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% from "_field.html" import error, csrf %}
+{% block title %}{{ _('طلب انضمام') }}{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <div class="form-head"><p class="eyebrow">{{ _('الخطوة 1 من 3') }}</p><h1>{{ _('طلب انضمام للحي') }}</h1>
+  <p class="muted">{{ _('سيراجع عمدة الحي طلبك. جوالك وعنوانك لا يظهران لبقية السكان.') }}</p></div>
+  <form method="post" novalidate>
+    {{ csrf() }}
+    <label for="name">{{ _('الاسم') }}</label>
+    <input id="name" name="name" value="{{ form.name }}" autocomplete="name">
+    {{ error(errors, 'name') }}
+
+    <label for="phone">{{ _('رقم الجوال') }}</label>
+    <input id="phone" name="phone" value="{{ form.phone }}" inputmode="numeric" placeholder="05XXXXXXXX" dir="ltr">
+    {{ error(errors, 'phone') }}
+
+    <label for="neighborhood_id">{{ _('الحي') }}</label>
+    <select id="neighborhood_id" name="neighborhood_id">
+      <option value="">{{ _('اختر الحي') }}</option>
+      {% for n in neighborhoods %}
+        <option value="{{ n.id }}" {% if form.neighborhood_id == n.id|string %}selected{% endif %}>{{ _(n.name) }}</option>
+      {% endfor %}
+    </select>
+    {{ error(errors, 'neighborhood_id') }}
+
+    <label for="address">{{ _('العنوان') }}</label>
+    <textarea id="address" name="address" rows="2" placeholder="{{ _('الشارع ورقم المنزل') }}">{{ form.address }}</textarea>
+    {{ error(errors, 'address') }}
+
+    <button class="btn btn-block" type="submit">{{ _('إرسال الطلب') }}</button>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_field.html" import error, csrf %}
+{% from "_password.html" import password_fields %}
+{% block title %}{{ _('إنشاء حساب') }}{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <div class="form-head"><p class="eyebrow">{{ _('الخطوة 3 من 3') }}</p><h1>{{ _('إنشاء حساب') }}</h1>
+  <p class="muted">{{ _('استخدم كود الدعوة الذي ظهر لك في صفحة متابعة الطلب.') }}</p></div>
+  <form method="post" novalidate>
+    {{ csrf() }}
+    <label for="code">{{ _('كود الدعوة') }}</label>
+    <input id="code" name="code" value="{{ form.code }}" dir="ltr" autocomplete="off" class="mono">
+    {{ error(errors, 'code') }}
+
+    <label for="phone">{{ _('رقم الجوال (نفس رقم طلب الانضمام)') }}</label>
+    <input id="phone" name="phone" value="{{ form.phone }}" inputmode="numeric" placeholder="05XXXXXXXX" dir="ltr" autocomplete="username">
+    {{ error(errors, 'phone') }}
+
+    {{ password_fields(errors, _('كلمة المرور')) }}
+
+    <button class="btn btn-block" type="submit">{{ _('إنشاء الحساب') }}</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='password.js') }}"></script>{% endblock %}

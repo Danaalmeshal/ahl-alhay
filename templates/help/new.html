@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% from "_field.html" import error, csrf %}
+{% block title %}{{ _('طلب مساعدة جديد') }}{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <div class="form-head"><p class="eyebrow">{{ _('حي {hood}', hood=_(g.user['neighborhood_name'])) }}</p><h1>{{ _('طلب مساعدة جديد') }}</h1><p class="muted">{{ _('سيظهر طلبك لجيرانك في نفس الحي فقط.') }}</p></div>
+  <form method="post" novalidate>
+    {{ csrf() }}
+    <label for="title">{{ _('العنوان') }}</label>
+    <input id="title" name="title" value="{{ form.title }}" maxlength="120" placeholder="{{ _('مثال: أحتاج سلّم لمدة ساعة') }}">
+    {{ error(errors, 'title') }}
+
+    <label for="category">{{ _('التصنيف') }}</label>
+    <select id="category" name="category">
+      <option value="">{{ _('اختر التصنيف') }}</option>
+      {% for c in categories %}<option value="{{ c }}" {% if form.category == c %}selected{% endif %}>{{ _(c) }}</option>{% endfor %}
+    </select>
+    {{ error(errors, 'category') }}
+
+    <label for="description">{{ _('الوصف') }}</label>
+    <textarea id="description" name="description" rows="5">{{ form.description }}</textarea>
+    {{ error(errors, 'description') }}
+
+    <button class="btn btn-block" type="submit">{{ _('نشر الطلب') }}</button>
+  </form>
+</div>
+{% endblock %}

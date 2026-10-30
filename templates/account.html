@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% from "_field.html" import error, csrf, avatar %}
+{% from "_password.html" import password_fields %}
+{% block title %}{{ _('الحساب الشخصي') }}{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div class="with-avatar">
+    {{ avatar(g.user['name'], 'avatar-lg') }}
+    <div>
+      <p class="eyebrow">{{ _('الحساب الشخصي') }}</p>
+      <h1>{{ g.user['name'] }}</h1>
+    </div>
+  </div>
+</div>
+
+<div class="account-grid">
+  <section class="card">
+    <h2 class="card-title">{{ _('معلومات الحساب') }}</h2>
+    <dl class="info-list">
+      <div><dt>{{ _('الدور') }}</dt><dd>{% if g.user['role'] == 'admin' %}<span class="role-badge role-admin">{{ _('العمدة · مشرف الحي') }}</span>{% else %}<span class="role-badge role-resident-light">{{ _('ساكن') }}</span>{% endif %}</dd></div>
+      <div><dt>{{ _('الحي') }}</dt><dd>{{ _(g.user['neighborhood_name']) }}</dd></div>
+      <div><dt>{{ _('رقم الجوال') }}</dt><dd dir="ltr">{{ g.user['phone'] }}</dd></div>
+      <div><dt>{{ _('عضو منذ') }}</dt><dd dir="ltr">{{ g.user['created_at'][:10] }}</dd></div>
+    </dl>
+    <p class="hint">{{ _('الحي لا يتغير من هنا. تواصل مع عمدة الحي.') }}</p>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">{{ _('تعديل المعلومات') }}</h2>
+    <form method="post" action="{{ url_for('account.profile') }}" novalidate>
+      {{ csrf() }}
+      <label for="name">{{ _('الاسم') }}</label>
+      <input id="name" name="name" value="{{ form.name }}" autocomplete="name">
+      {{ error(errors, 'name') }}
+      <label for="acc-phone">{{ _('رقم الجوال') }}</label>
+      <input id="acc-phone" name="phone" value="{{ form.phone }}" inputmode="numeric" dir="ltr">
+      <p class="hint">{{ _('يُستخدم رقم الجوال لتسجيل الدخول.') }}</p>
+      {{ error(errors, 'phone') }}
+      <button class="btn btn-block" type="submit">{{ _('حفظ التعديلات') }}</button>
+    </form>
+  </section>
+
+  <section class="card account-password">
+    <h2 class="card-title">{{ _('تغيير كلمة المرور') }}</h2>
+    <form method="post" action="{{ url_for('account.change_password') }}" novalidate>
+      {{ csrf() }}
+      <label for="current_password">{{ _('كلمة المرور الحالية') }}</label>
+      <input id="current_password" name="current_password" type="password" dir="ltr" autocomplete="current-password">
+      {{ error(pw_errors, 'current_password') }}
+      {{ password_fields(pw_errors, _('كلمة المرور الجديدة')) }}
+      <button class="btn btn-block" type="submit">{{ _('تحديث كلمة المرور') }}</button>
+    </form>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='password.js') }}"></script>{% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% from "_field.html" import csrf %}
+{% block title %}{{ _('متابعة الطلب') }}{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <div class="form-head"><p class="eyebrow">{{ _('الخطوة 2 من 3') }}</p><h1>{{ _('متابعة طلب الانضمام') }}</h1><p class="muted">{{ _('أدخل رقم الطلب ورقم الجوال الذي استخدمته.') }}</p></div>
+  <form method="post" novalidate>
+    {{ csrf() }}
+    <label for="request_number">{{ _('رقم الطلب') }}</label>
+    <input id="request_number" name="request_number" value="{{ request_number }}" inputmode="numeric" dir="ltr">
+    <label for="phone">{{ _('رقم الجوال المستخدم في الطلب') }}</label>
+    <input id="phone" name="phone" inputmode="numeric" placeholder="05XXXXXXXX" dir="ltr">
+    <button class="btn btn-block" type="submit">{{ _('تحقق') }}</button>
+  </form>
+  {% if error %}<p class="flash flash-error">{{ error }}</p>{% endif %}
+</div>
+
+{% if result %}
+<div class="card narrow status-card status-{{ result.status }}">
+  {% if result.status == 'pending' %}
+    <span class="badge badge-pending">{{ _('قيد المراجعة') }}</span>
+    <p>{{ _('طلبك للانضمام إلى حي {hood} قيد المراجعة من مشرف الحي.', hood=_(result.neighborhood_name)) }}</p>
+  {% elif result.status == 'rejected' %}
+    <span class="badge badge-rejected">{{ _('مرفوض') }}</span>
+    <p><strong>{{ _('سبب الرفض:') }}</strong> {{ result.rejection_reason }}</p>
+  {% else %}
+    <div class="invite-head"><div><span class="badge badge-approved">{{ _('مقبول') }}</span><h2>{{ _('حياك الله في حي {hood}', hood=_(result.neighborhood_name)) }}</h2></div></div>
+    {% if result.welcome_message %}
+      <blockquote class="welcome">{{ result.welcome_message }}</blockquote>
+    {% endif %}
+    {% if result.used_at %}
+      <p class="muted">{{ _('تم استخدام كود الدعوة وإنشاء الحساب. يمكنك تسجيل الدخول.') }}</p>
+      <a class="btn" href="{{ url_for('auth.login') }}">{{ _('تسجيل الدخول') }}</a>
+    {% else %}
+      <p class="muted">{{ _('مفتاحك للحي · كود الدعوة (يُستخدم مرة واحدة):') }}</p>
+      <p class="code-box" dir="ltr">{{ result.code }}</p>
+      <a class="btn" href="{{ url_for('auth.register', code=result.code) }}">{{ _('سجّل الآن') }}</a>
+    {% endif %}
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

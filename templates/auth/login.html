@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_field.html" import csrf %}
+{% block title %}{{ _('تسجيل الدخول') }}{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <div class="form-head"><p class="eyebrow">{{ _('أهلاً بعودتك') }}</p><h1>{{ _('تسجيل الدخول') }}</h1><p class="muted">{{ _('للسكان وعمدة الحي.') }}</p></div>
+  {% if error %}<p class="flash flash-error">{{ error }}</p>{% endif %}
+  <form method="post" novalidate>
+    {{ csrf() }}
+    <label for="phone">{{ _('رقم الجوال') }}</label>
+    <input id="phone" name="phone" value="{{ phone }}" inputmode="numeric" placeholder="05XXXXXXXX" dir="ltr" autocomplete="username">
+    <label for="password">{{ _('كلمة المرور') }}</label>
+    <input id="password" name="password" type="password" dir="ltr" autocomplete="current-password">
+    <button class="btn btn-block" type="submit">{{ _('دخول') }}</button>
+  </form>
+  <p class="muted small">{{ _('ليس لديك حساب؟') }} <a href="{{ url_for('membership.join') }}">{{ _('اطلب الانضمام') }}</a> {{ _('أو') }} <a href="{{ url_for('membership.status') }}">{{ _('تابع طلبك') }}</a>.</p>
+</div>
+{% endblock %}
