@@ -16,7 +16,7 @@ def _get_request_in_my_neighborhood(request_id):
     """PBI 6A: a request from another neighborhood is treated as not found."""
     row = get_db().execute(
         "SELECT hr.*, u.name AS author_name FROM help_requests hr JOIN users u ON u.id = hr.author_id "
-        "WHERE hr.id = ? AND hr.neighborhood_id = ?",
+        "WHERE hr.id = ? AND hr.neighborhood_id = ? AND hr.hidden = 0",
         (request_id, g.user["neighborhood_id"]),
     ).fetchone()
     if row is None:
@@ -31,9 +31,9 @@ def _get_request_in_my_neighborhood(request_id):
 def list_requests():
     rows = get_db().execute(
         "SELECT hr.id, hr.title, hr.category, hr.created_at, u.name AS author_name, "
-        "(SELECT COUNT(*) FROM replies r WHERE r.help_request_id = hr.id) AS reply_count "
+        "(SELECT COUNT(*) FROM replies r WHERE r.help_request_id = hr.id AND r.hidden = 0) AS reply_count "
         "FROM help_requests hr JOIN users u ON u.id = hr.author_id "
-        "WHERE hr.neighborhood_id = ? AND hr.status = 'open' ORDER BY hr.created_at DESC, hr.id DESC",
+        "WHERE hr.neighborhood_id = ? AND hr.status = 'open' AND hr.hidden = 0 ORDER BY hr.created_at DESC, hr.id DESC",
         (g.user["neighborhood_id"],),
     ).fetchall()
     return render_template("help/list.html", requests=rows)
@@ -100,8 +100,8 @@ def detail(request_id):
             db.commit()
             return redirect(url_for("help.detail", request_id=request_id) + "#replies")
     replies = db.execute(
-        "SELECT r.body, r.created_at, r.author_id, u.name AS author_name FROM replies r "
-        "JOIN users u ON u.id = r.author_id WHERE r.help_request_id = ? ORDER BY r.created_at, r.id",
+        "SELECT r.id, r.body, r.created_at, r.author_id, u.name AS author_name FROM replies r "
+        "JOIN users u ON u.id = r.author_id WHERE r.help_request_id = ? AND r.hidden = 0 ORDER BY r.created_at, r.id",
         (request_id,),
     ).fetchall()
     return render_template("help/detail.html", req=help_request, replies=replies, error=error)

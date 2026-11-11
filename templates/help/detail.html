@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_field.html" import csrf, avatar %}
+{% from "_field.html" import csrf, avatar, report_link %}
 {% block title %}{{ req.title }}{% endblock %}
 {% block content %}
 <a class="back" href="{{ url_for('help.list_requests') }}">{{ _('كل الطلبات') }}</a>
@@ -11,6 +11,7 @@
   <h1>{{ req.title }}</h1>
   <p class="item-meta">{{ avatar(req.author_name) }} <strong>{{ req.author_name }}</strong> · <span dir="ltr">{{ req.created_at[:16] }}</span></p>
   <p class="body-text">{{ req.description }}</p>
+  {% if req.author_id != g.user['id'] %}<p class="small">{{ report_link('help', req.id) }}</p>{% endif %}
   {% if req.author_id == g.user['id'] and req.status == 'open' %}
     <form method="post" action="{{ url_for('help.resolve', request_id=req.id) }}">
       {{ csrf() }}
@@ -27,6 +28,7 @@
     <div class="bubble">
       <p class="reply-meta"><strong>{{ rep.author_name }}</strong>{% if rep.author_id == req.author_id %} <span class="owner-tag">{{ _('صاحب الطلب') }}</span>{% endif %} · <span dir="ltr">{{ rep.created_at[:16] }}</span></p>
       <p>{{ rep.body }}</p>
+      {% if rep.author_id != g.user['id'] %}<p class="small">{{ report_link('reply', rep.id) }}</p>{% endif %}
     </div>
   </div>
 {% else %}

@@ -100,38 +100,55 @@ def admin_requests():
     stats = {
         "pending": len(pending),
         "residents": db.execute("SELECT COUNT(*) FROM users WHERE neighborhood_id = ? AND role = 'resident'", (hood,)).fetchone()[0],
-        "open_help": db.execute("SELECT COUNT(*) FROM help_requests WHERE neighborhood_id = ? AND status = 'open'", (hood,)).fetchone()[0],
+        "open_help": db.execute("SELECT COUNT(*) FROM help_requests WHERE neighborhood_id = ? AND status = 'open' AND hidden = 0", (hood,)).fetchone()[0],
     }
     return render_template("admin/requests.html", pending=pending, decided=decided, stats=stats)
 
 
-def _own_pending_request(request_id):
-    """Only requests of the administrator's own neighborhood can be decided."""
+def _own_request(request_id):
+    """Only requests of the administrator's own neighborhood can be opened (others look like "not found")."""
     row = get_db().execute(
         "SELECT * FROM join_requests WHERE id = ? AND neighborhood_id = ?",
         (request_id, g.user["neighborhood_id"]),
     ).fetchone()
     if row is None:
         abort(404)
-    if row["status"] != "pending":
-        flash(_("تم اتخاذ قرار في هذا الطلب مسبقاً."), "info")
-        return None
     return row
+
+
+def _already_decided_message(row):
+    """PBI 2B: a request that already has a decision cannot be decided again; say so clearly."""
+    state = _("مقبول") if row["status"] == "approved" else _("مرفوض")
+    flash(_("طلب {name} تم اتخاذ قرار فيه مسبقاً ({state}). حدّث الصفحة لرؤية آخر حالة.", name=row["name"], state=state), "info")
 
 
 @bp.route("/admin/requests/<int:request_id>/approve", methods=("POST",))
 @admin_required
 def approve(request_id):
-    row = _own_pending_request(request_id)
-    if row is None:
-        return redirect(url_for("membership.admin_requests"))
+    row = _own_request(request_id)
     db = get_db()
+    if row["status"] == "approved":
+        # PBI 3B: approving again never creates a second code; the existing one is shown.
+        existing = db.execute("SELECT code, used_at FROM invitation_codes WHERE join_request_id = ?", (request_id,)).fetchone()
+        if existing is not None and existing["used_at"] is None:
+            flash(_("الطلب مقبول مسبقاً. كود الدعوة الحالي: {code}.", code=existing["code"]), "info")
+        else:
+            _already_decided_message(row)
+        return redirect(url_for("membership.admin_requests"))
+    if row["status"] != "pending":
+        _already_decided_message(row)
+        return redirect(url_for("membership.admin_requests"))
     welcome = request.form.get("welcome_message", "").strip() or None
-    db.execute(
+    # The status change and the code are saved together (one active code per request: join_request_id is UNIQUE).
+    changed = db.execute(
         "UPDATE join_requests SET status = 'approved', welcome_message = ?, decided_at = CURRENT_TIMESTAMP "
         "WHERE id = ? AND status = 'pending'",
         (welcome, request_id),
     )
+    if changed.rowcount != 1:  # someone decided it a moment ago
+        db.rollback()
+        _already_decided_message(_own_request(request_id))
+        return redirect(url_for("membership.admin_requests"))
     code = new_invitation_code(db)
     db.execute(
         "INSERT INTO invitation_codes (code, join_request_id, neighborhood_id) VALUES (?, ?, ?)",
@@ -145,8 +162,9 @@ def approve(request_id):
 @bp.route("/admin/requests/<int:request_id>/reject", methods=("POST",))
 @admin_required
 def reject(request_id):
-    row = _own_pending_request(request_id)
-    if row is None:
+    row = _own_request(request_id)
+    if row["status"] != "pending":
+        _already_decided_message(row)
         return redirect(url_for("membership.admin_requests"))
     reason = request.form.get("rejection_reason", "").strip()
     if not reason:

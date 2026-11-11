@@ -93,6 +93,9 @@
         {% endif %}
         <a href="{{ url_for('help.list_requests') }}" class="{{ 'active' if ep in ('help.list_requests', 'help.detail') }}">{{ _('طلبات المساعدة') }}</a>
         <a href="{{ url_for('help.new_request') }}" class="{{ 'active' if ep == 'help.new_request' }}">{{ _('طلب جديد') }}</a>
+        <a href="{{ url_for('notices.list_notices') }}" class="{{ 'active' if ep.startswith('notices.') }}">{{ _('بلاغات الحي') }}</a>
+        <a href="{{ url_for('posts.list_posts') }}" class="{{ 'active' if ep.startswith('posts.') }}">{{ _('منشورات الحي') }}</a>
+        {% if g.user['role'] == 'admin' %}<a href="{{ url_for('moderation.admin_reports') }}" class="{{ 'active' if ep == 'moderation.admin_reports' }}">{{ _('مراجعة البلاغات') }}</a>{% endif %}
         <a href="{{ url_for('account.profile') }}" class="{{ 'active' if ep.startswith('account.') }}">{{ _('الحساب الشخصي') }}</a>
         <a href="{{ url_for('community.neighbors') }}" class="{{ 'active' if ep == 'community.neighbors' }}">{{ _('أهل الحي||page') }}</a>
       {% else %}

@@ -6,6 +6,7 @@
 <div class="card narrow">
   <div class="form-head"><p class="eyebrow">{{ _('الخطوة 3 من 3') }}</p><h1>{{ _('إنشاء حساب') }}</h1>
   <p class="muted">{{ _('استخدم كود الدعوة الذي ظهر لك في صفحة متابعة الطلب.') }}</p></div>
+  {% if errors.get('form') %}<p class="flash flash-error">{{ errors['form'] }}</p>{% endif %}
   <form method="post" novalidate>
     {{ csrf() }}
     <label for="code">{{ _('كود الدعوة') }}</label>

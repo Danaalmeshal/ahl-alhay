@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ _('منشورات الحي') }}{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <p class="eyebrow">{{ _('حي {hood}', hood=_(g.user['neighborhood_name'])) }}</p>
+    <h1>{{ _('منشورات الحي') }}</h1>
+    <p class="muted">{{ _('{count} منشور · الأحدث أولاً', count=posts|length) }}</p>
+  </div>
+  <a class="btn" href="{{ url_for('posts.new_post') }}">{{ _('منشور جديد') }}</a>
+</div>
+{% if not posts %}
+  <div class="empty"><p>{{ _('لا توجد منشورات بعد.') }}</p><a class="btn" href="{{ url_for('posts.new_post') }}">{{ _('كن أول من ينشر') }}</a></div>
+{% else %}
+  <div class="request-list">
+  {% for p in posts %}
+    <a class="request-item" href="{{ url_for('posts.detail', post_id=p.id) }}">
+      <div class="item-body">
+        <h3>{{ p.title }}</h3>
+        <p class="muted">{{ p.body[:140] }}{% if p.body|length > 140 %}…{% endif %}</p>
+        <p class="item-meta">{{ p.author_name }} · <span dir="ltr">{{ p.created_at[:16] }}</span></p>
+      </div>
+      <span class="reply-count">{{ _('{count} تعليق', count=p.comment_count) }}</span>
+    </a>
+  {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ _('بلاغات الحي') }}{% endblock %}
+{% block content %}
+<div class="page-title">
+  <div>
+    <p class="eyebrow">{{ _('حي {hood}', hood=_(g.user['neighborhood_name'])) }}</p>
+    <h1>{{ _('بلاغات الحي') }}</h1>
+    <p class="muted">{{ _('{count} بلاغ · الأحدث أولاً', count=notices|length) }}</p>
+  </div>
+  <a class="btn" href="{{ url_for('notices.new_notice') }}">{{ _('نشر بلاغ') }}</a>
+</div>
+
+<form method="get" class="card filters">
+  <label for="category">{{ _('التصنيف') }}</label>
+  <select id="category" name="category">
+    <option value="">{{ _('كل التصنيفات') }}</option>
+    {% for c in categories %}<option value="{{ c }}" {% if category == c %}selected{% endif %}>{{ _(c) }}</option>{% endfor %}
+  </select>
+  <label for="status">{{ _('الحالة') }}</label>
+  <select id="status" name="status">
+    <option value="">{{ _('الكل') }}</option>
+    <option value="open" {% if status == 'open' %}selected{% endif %}>{{ _('مفتوح') }}</option>
+    <option value="resolved" {% if status == 'resolved' %}selected{% endif %}>{{ _('تم الحل') }}</option>
+  </select>
+  <button class="btn btn-small" type="submit">{{ _('تصفية') }}</button>
+</form>
+
+{% if not notices %}
+  <div class="empty"><p>{{ _('لا توجد بلاغات مطابقة.') }}</p></div>
+{% else %}
+  <div class="request-list">
+  {% for n in notices %}
+    <a class="request-item" href="{{ url_for('notices.detail', notice_id=n.id) }}">
+      <div class="item-body">
+        <span class="cat">{{ _(n.category) }}</span>
+        {% if n.status == 'resolved' %}<span class="badge badge-approved">{{ _('تم الحل') }}</span>{% else %}<span class="badge badge-open">{{ _('مفتوح') }}</span>{% endif %}
+        <h3>{{ n.location }}</h3>
+        <p class="item-meta">{{ n.author_name }} · <span dir="ltr">{{ n.created_at[:16] }}</span></p>
+      </div>
+      <span class="reply-count">{{ _('{count} رد', count=n.reply_count) }}</span>
+    </a>
+  {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

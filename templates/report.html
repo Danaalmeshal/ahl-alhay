@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% from "_field.html" import csrf %}
+{% block title %}{{ _('إبلاغ') }}{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <div class="form-head"><h1>{{ _('إبلاغ عن محتوى') }}</h1><p class="muted">{{ _('يصل البلاغ إلى عمدة حيّك فقط.') }}</p></div>
+  <p class="card"><span class="cat">{{ _(type_name) }}</span><br>{{ item.label[:200] }}</p>
+  <form method="post" novalidate>
+    {{ csrf() }}
+    <label for="reason">{{ _('سبب البلاغ') }}</label>
+    <textarea id="reason" name="reason" rows="3"></textarea>
+    {% if error %}<p class="field-error">{{ error }}</p>{% endif %}
+    <button class="btn btn-block" type="submit">{{ _('إرسال البلاغ') }}</button>
+  </form>
+</div>
+{% endblock %}

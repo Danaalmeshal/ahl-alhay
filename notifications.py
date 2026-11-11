@@ -17,6 +17,12 @@ TEXTS = {
     "new_reply": "{name} ردّ على طلبك: {title}",
     "owner_reply": "{name} ردّ في الطلب: {title}",
     "request_resolved": "تم حل الطلب «{title}». شكراً لمساعدتك!",
+    "new_notice": "{name} نشر بلاغاً في الحي ({category}): {location}",
+    "notice_reply": "{name} ردّ على بلاغك ({category}).",
+    "notice_resolved": "تم حل البلاغ ({category}). شكراً لمتابعتك!",
+    "post_comment": "{name} علّق على منشورك: {title}",
+    "new_report": "بلاغ جديد على محتوى ينتظر مراجعتك.",
+    "content_removed": "تمت إزالة محتواك من قبل عمدة الحي بعد مراجعة بلاغ عليه.",
 }
 
 
