@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_field.html" import error, csrf %}
+{% block title %}{{ _('منشور جديد') }}{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <div class="form-head"><p class="eyebrow">{{ _('حي {hood}', hood=_(g.user['neighborhood_name'])) }}</p><h1>{{ _('منشور جديد') }}</h1><p class="muted">{{ _('سيظهر منشورك لجيرانك في نفس الحي فقط.') }}</p></div>
+  <form method="post" novalidate>
+    {{ csrf() }}
+    <label for="title">{{ _('العنوان') }}</label>
+    <input id="title" name="title" value="{{ form.title }}" maxlength="120">
+    {{ error(errors, 'title') }}
+    <label for="body">{{ _('الرسالة') }}</label>
+    <textarea id="body" name="body" rows="5">{{ form.body }}</textarea>
+    {{ error(errors, 'body') }}
+    <button class="btn btn-block" type="submit">{{ _('نشر') }}</button>
+  </form>
+</div>
+{% endblock %}

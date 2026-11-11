@@ -66,6 +66,14 @@ def upgrade_db():
             "kind TEXT NOT NULL, params TEXT NOT NULL DEFAULT '{}', link TEXT, "
             "created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, read_at TEXT);"
         )
+    # ---- Sprint 2 ----
+    for table in ("help_requests", "replies"):
+        if "hidden" not in {r[1] for r in db.execute(f"PRAGMA table_info({table})")}:
+            db.execute(f"ALTER TABLE {table} ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0")
+    if "notices" not in tables:
+        schema = open(os.path.join(current_app.root_path, "schema.sql"), encoding="utf-8").read()
+        sprint2 = schema[schema.index("-- Sprint 2, PBI 11-14"):]
+        db.executescript(sprint2)
     db.commit()
 
 

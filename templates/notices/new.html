@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_field.html" import error, csrf %}
+{% block title %}{{ _('نشر بلاغ') }}{% endblock %}
+{% block content %}
+<div class="card narrow">
+  <div class="form-head"><p class="eyebrow">{{ _('حي {hood}', hood=_(g.user['neighborhood_name'])) }}</p><h1>{{ _('نشر بلاغ') }}</h1><p class="muted">{{ _('سيظهر البلاغ لجيرانك في نفس الحي فقط.') }}</p></div>
+  <form method="post" novalidate>
+    {{ csrf() }}
+    <label for="category">{{ _('التصنيف') }}</label>
+    <select id="category" name="category">
+      <option value="">{{ _('اختر التصنيف') }}</option>
+      {% for c in categories %}<option value="{{ c }}" {% if form.category == c %}selected{% endif %}>{{ _(c) }}</option>{% endfor %}
+    </select>
+    {{ error(errors, 'category') }}
+    <label for="description">{{ _('الوصف') }}</label>
+    <textarea id="description" name="description" rows="4">{{ form.description }}</textarea>
+    {{ error(errors, 'description') }}
+    <label for="location">{{ _('وصف الموقع') }}</label>
+    <input id="location" name="location" value="{{ form.location }}" maxlength="200" placeholder="{{ _('مثال: بجانب مسجد الحي، شارع 15') }}">
+    {{ error(errors, 'location') }}
+    <button class="btn btn-block" type="submit">{{ _('نشر البلاغ') }}</button>
+  </form>
+</div>
+{% endblock %}

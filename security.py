@@ -12,6 +12,13 @@ ACTIVE_WINDOW_SECONDS = 120  # "active" = seen on the site within the last 2 min
 
 # ---------- Current user and access control (PBI 5A / 6A) ----------
 
+def safe_next(target):
+    """Only a path on this site is accepted (never another website)."""
+    if target and target.startswith("/") and not target.startswith("//") and "\\" not in target:
+        return target
+    return None
+
+
 def load_current_user():
     user_id = session.get("user_id")
     g.user = None
@@ -35,8 +42,11 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped(**kwargs):
         if g.user is None:
-            flash(_("الرجاء تسجيل الدخول أولاً."), "info")
-            return redirect(url_for("auth.login"))
+            # PBI 5B: an expired or missing session goes to the login page and comes back to this page afterwards.
+            expired = bool(request.cookies.get("ahl_signed_in"))  # set at login: the session ended, it did not just never start
+            flash(_("انتهت الجلسة. سجّل دخولك مرة أخرى للمتابعة.") if expired else _("الرجاء تسجيل الدخول أولاً."), "info")
+            target = request.full_path.rstrip("?") if request.method == "GET" else None
+            return redirect(url_for("auth.login", next=target) if target else url_for("auth.login"))
         return view(**kwargs)
     return wrapped
 

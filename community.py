@@ -26,7 +26,7 @@ def neighbors():
     ).fetchall()
     open_requests = {}
     for r in db.execute(
-        "SELECT id, title, category, author_id FROM help_requests WHERE neighborhood_id = ? AND status = 'open' "
+        "SELECT id, title, category, author_id FROM help_requests WHERE neighborhood_id = ? AND status = 'open' AND hidden = 0 "
         "ORDER BY created_at DESC, id DESC",
         (g.user["neighborhood_id"],),
     ):

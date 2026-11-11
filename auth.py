@@ -1,11 +1,12 @@
 """Accounts: register with an invitation code (PBI 4A), log in and log out (PBI 5A)."""
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, g, make_response, redirect, render_template, request, session, url_for
+from sqlite3 import IntegrityError
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from db import get_db
 from i18n import _
 from notifications import notify
-from security import normalize_phone, password_problems, session_lang_separator
+from security import normalize_phone, password_problems, safe_next, session_lang_separator
 
 bp = Blueprint("auth", __name__)
 
@@ -57,26 +58,33 @@ def register():
             errors["confirm_password"] = _("كلمتا المرور غير متطابقتين.")
 
         if not errors:
-            # Create the account and use the code in one transaction.
-            used = db.execute(
-                "UPDATE invitation_codes SET used_at = CURRENT_TIMESTAMP WHERE id = ? AND used_at IS NULL",
-                (invite["id"],),
-            )
-            if used.rowcount != 1:
-                db.rollback()
-                errors["code"] = _("كود الدعوة مستخدم من قبل.")
-            else:
-                cur = db.execute(
-                    "INSERT INTO users (name, phone, password_hash, role, neighborhood_id) "
-                    "VALUES (?, ?, ?, 'resident', ?)",
-                    (invite["request_name"], form["phone"], generate_password_hash(password), invite["neighborhood_id"]),
+            # PBI 4B: account + code usage happen in ONE transaction. If anything fails, nothing is saved
+            # and the code stays unused, so the person can try again.
+            try:
+                used = db.execute(
+                    "UPDATE invitation_codes SET used_at = CURRENT_TIMESTAMP WHERE id = ? AND used_at IS NULL",
+                    (invite["id"],),
                 )
-                hood = db.execute("SELECT name FROM neighborhoods WHERE id = ?", (invite["neighborhood_id"],)).fetchone()["name"]
-                notify(cur.lastrowid, "welcome", link=url_for("help.list_requests"), hood=hood)
-                db.commit()
-                flash(_("تم إنشاء حسابك بنجاح. سجّل دخولك الآن."), "success")
-                return redirect(url_for("auth.login"))
-
+                if used.rowcount != 1:  # e.g. a double click: the first request already used the code
+                    db.rollback()
+                    errors["code"] = _("كود الدعوة مستخدم من قبل.")
+                else:
+                    cur = db.execute(
+                        "INSERT INTO users (name, phone, password_hash, role, neighborhood_id) "
+                        "VALUES (?, ?, ?, 'resident', ?)",
+                        (invite["request_name"], form["phone"], generate_password_hash(password), invite["neighborhood_id"]),
+                    )
+                    hood = db.execute("SELECT name FROM neighborhoods WHERE id = ?", (invite["neighborhood_id"],)).fetchone()["name"]
+                    notify(cur.lastrowid, "welcome", link=url_for("help.list_requests"), hood=hood)
+                    db.commit()
+                    flash(_("تم إنشاء حسابك بنجاح. سجّل دخولك الآن."), "success")
+                    return redirect(url_for("auth.login"))
+            except (IntegrityError, Exception) as exc:  # noqa: BLE001 - any failure must roll back
+                db.rollback()
+                if isinstance(exc, IntegrityError):
+                    errors["phone"] = _("رقم الجوال مسجل مسبقاً.")
+                else:
+                    errors["form"] = _("تعذّر إنشاء الحساب. لم يتم استخدام الكود، حاول مرة أخرى.")
     return render_template("auth/register.html", form=form, errors=errors)
 
 
@@ -101,9 +109,12 @@ def login():
             session["user_id"] = user["id"]
             if lang:
                 session["lang"] = lang
-            if user["role"] == "admin":
-                return redirect(url_for("membership.admin_requests"))
-            return redirect(url_for("dashboard"))
+            session.permanent = True  # expires after PERMANENT_SESSION_LIFETIME of inactivity
+            target = safe_next(request.args.get("next")) or url_for(
+                "membership.admin_requests" if user["role"] == "admin" else "dashboard")
+            resp = make_response(redirect(target))
+            resp.set_cookie("ahl_signed_in", "1", max_age=7 * 24 * 3600, httponly=True, samesite="Lax")
+            return resp
     return render_template("auth/login.html", phone=phone, error=error)
 
 
@@ -119,4 +130,6 @@ def logout():
     if lang:
         session["lang"] = lang
     flash(_("تم تسجيل الخروج."), "info")
-    return redirect(url_for("auth.login"))
+    resp = make_response(redirect(url_for("auth.login")))
+    resp.delete_cookie("ahl_signed_in")
+    return resp

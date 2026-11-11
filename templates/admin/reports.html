@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_field.html" import csrf %}
+{% block title %}{{ _('مراجعة البلاغات') }}{% endblock %}
+{% block content %}
+<div class="page-title"><div><p class="eyebrow">{{ _('حي {hood}', hood=_(g.user['neighborhood_name'])) }}</p><h1>{{ _('مراجعة البلاغات') }}</h1><p class="muted">{{ _('{count} بلاغ مفتوح', count=items|length) }}</p></div></div>
+{% if not items %}
+  <div class="empty"><p>{{ _('لا توجد بلاغات تنتظر المراجعة.') }}</p></div>
+{% endif %}
+{% for it in items %}
+<article class="card request-card">
+  <div class="request-head"><span class="cat">{{ _(it.type_name) }}</span><span class="muted" dir="ltr">#{{ it.report.id }}</span></div>
+  <p class="body-text">{{ it.label[:300] }}</p>
+  <dl class="meta">
+    <div><dt>{{ _('صاحب المحتوى') }}</dt><dd>{{ it.author }}</dd></div>
+    <div><dt>{{ _('المُبلِّغ') }}</dt><dd>{{ it.report.reporter_name }}</dd></div>
+    <div><dt>{{ _('سبب البلاغ') }}</dt><dd>{{ it.report.reason }}</dd></div>
+  </dl>
+  <div class="decision">
+    <form method="post" action="{{ url_for('moderation.decide', report_id=it.report.id, action='remove') }}" class="decision-form">{{ csrf() }}<button class="btn btn-reject" type="submit">{{ _('إزالة المحتوى') }}</button></form>
+    <form method="post" action="{{ url_for('moderation.decide', report_id=it.report.id, action='dismiss') }}" class="decision-form">{{ csrf() }}<button class="btn btn-approve" type="submit">{{ _('تجاهل البلاغ') }}</button></form>
+  </div>
+</article>
+{% endfor %}
+{% endblock %}

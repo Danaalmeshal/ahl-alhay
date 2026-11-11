@@ -24,3 +24,4 @@
   </div>
 </section>
 {% endmacro %}
+{% macro report_link(content_type, content_id) %}<a class="report-link" href="{{ url_for('moderation.report', content_type=content_type, content_id=content_id) }}">{{ _('إبلاغ') }}</a>{% endmacro %}
